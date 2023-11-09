@@ -71,4 +71,4 @@ chart_element = mesa.visualization.ChartModule(
 
 canvas_element = mesa.visualization.CanvasGrid(person_portrayal, 20, 20, 500, 500)
 
-server = mesa.visualization.ModularServer(EvacuationModel, [canvas_element, chart_element], "Evacuation Model", model_params)
+server = mesa.visualization.ModularServer(EvacuationModel, [canvas_element], "Evacuation Model", model_params)
