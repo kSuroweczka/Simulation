@@ -1,50 +1,74 @@
 import mesa
-from agents import StudentAgent, JaguarAgent
-from utils import State
-
-def get_num_banned_students(model):
-    banned_students = [a for a in model.schedule.agents if a.state == State.BANNED]
-    return len(banned_students)
+from agents import StudentAgent, Walls
+from utils import *
 
 class EvacuationModel(mesa.Model):
-    def __init__(self, num_jaguars, num_students, proc_illegal_students, width=20, height=20, num_steps=20):
+    occupaded_cells = set()
+
+    def __init__(self, num_students, width=WIDTH, height=HEIGHT, num_steps=20):
         self.width = width
         self.height = height
-        self.num_jaguars = num_jaguars
         self.num_students = num_students
-        self.num_illegal_students = int(num_students * (proc_illegal_students/100))
         self.num_steps = num_steps
 
         self.schedule = mesa.time.SimultaneousActivation(self)
         self.grid = mesa.space.MultiGrid(width, height, True)
-        self.datacollector = mesa.DataCollector(
-            model_reporters={"Banned Students": get_num_banned_students},
-            agent_reporters={"State": lambda x: x.state}
-        )
 
-        # Create jaguars
-        for i in range(self.num_jaguars):
-            x = self.random.randrange(self.grid.width)
-            y = self.random.randrange(self.grid.height)
-            jaguar = JaguarAgent(i, self)
-            
-            self.grid.place_agent(jaguar, (x, y))
-            self.schedule.add(jaguar)
+        # use in the futer to optimize students movement
+        occupied_cells_by_walls = self.create_walls()
 
         # Create students
         for i in range(self.num_students):
             x = self.random.randrange(self.grid.width)
             y = self.random.randrange(self.grid.height)
-            if i < self.num_illegal_students:
-                student = StudentAgent(i + num_jaguars, self, State.ILLEGAL, True)
-            else:
-                student = StudentAgent(i + num_jaguars, self, State.LEGAL, False)
+            while (x, y) in occupied_cells_by_walls:
+                x = self.random.randrange(self.grid.width)
+                y = self.random.randrange(self.grid.height)
             
-            self.grid.place_agent(student, (x, y))
+            pos = (x, y)
+            student = StudentAgent(i, self, State.ACTIVE)
+            occupied_cells_by_walls.add(pos)
+    
+            self.grid.place_agent(student, pos)
             self.schedule.add(student)
 
         self.running = True
-        self.datacollector.collect(self)
+
+    def create_walls(self):
+        occupied_cells = set()  # Track occupied cells
+
+        rectangles = [
+            ((0, 18), (48, 34)),
+            ((49, 26), (96, 42)),
+            ((94, 0), (196, 18)),
+            ((197, 10), (249, 28)),
+            ((26, 35), (30, 43)),
+            ((18,44),(40,56)),
+            ((226,29),(230,37)),
+            ((216,38),(238,50)),
+            ((0,96),(48,112)),
+            ((148,94),(249,110)),
+            ((49,102),(147,119)),
+            ((226,85),(230,93)),
+            ((220,73),(242,84)),
+            ((62,93),(66,101)),
+            ((56,81),(78,92)),
+            ((0,35),(0,95)),
+            ((249,29),(249,93))
+            
+        ]
+
+        for top_left, bottom_right in rectangles:
+            for x in range(top_left[0], bottom_right[0] + 1):
+                for y in range(top_left[1], bottom_right[1] + 1):
+                    pos = (x, y)
+                    w = Walls(f'{x}-{y}', self, State.OBSTACLE)
+                    self.grid.place_agent(w, pos)
+                    self.schedule.add(w)
+                    occupied_cells.add(pos)
+
+        return occupied_cells
+
 
     def step(self):
         self.schedule.step()
