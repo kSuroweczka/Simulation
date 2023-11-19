@@ -39,8 +39,6 @@ model_params = {
         "Students", 100, 1, 300, description="Number of Students"),   
 }
 
-
-
 grid = mesa.visualization.CanvasGrid(person_portrayal, WIDTH, HEIGHT, WIDTH * PIXEL_RATIO, HEIGHT * PIXEL_RATIO)
 
 server = mesa.visualization.ModularServer(EvacuationModel, [grid], "Evacuation Model", model_params)

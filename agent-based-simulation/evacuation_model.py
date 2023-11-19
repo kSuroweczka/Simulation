@@ -14,7 +14,7 @@ class EvacuationModel(mesa.Model):
         self.grid = mesa.space.MultiGrid(width, height, True)
 
         # use in the futer to optimize students movement
-        self.occupied_cells_by_walls = self.create_walls()
+        self.walls = self.create_walls()
         self.exits = self.create_exits()
         self.create_students()
 
@@ -24,20 +24,19 @@ class EvacuationModel(mesa.Model):
         for i in range(self.num_students):
             x = self.random.randrange(self.grid.width)
             y = self.random.randrange(self.grid.height)
-            while (x, y) in self.occupied_cells_by_walls:
+            while (x, y) in self.walls or (x, y) in self.exits:
                 x = self.random.randrange(self.grid.width)
                 y = self.random.randrange(self.grid.height)
             
             pos = (x, y)
             student = StudentAgent(i, self, pos, State.ACTIVE)
-            self.occupied_cells_by_walls.add(pos)
     
             self.grid.place_agent(student, pos)
             self.schedule.add(student)
 
 
     def create_walls(self):
-        occupied_cells = set()  # Track occupied cells
+        walls = {}  # Track occupied cells
 
         rectangles = [
             ((0, 18), (48, 34)), # straszny dwór?
@@ -66,13 +65,13 @@ class EvacuationModel(mesa.Model):
             for x in range(top_left[0], bottom_right[0] + 1):
                 for y in range(top_left[1], bottom_right[1] + 1):
                     pos = (x, y)
-                    w = Walls(f'{x}-{y}', self, State.OBSTACLE)
-                    self.grid.place_agent(w, pos)
-                    occupied_cells.add(pos)
-        return occupied_cells
+                    wall = Walls(f'{x}-{y}', self, pos, State.OBSTACLE)
+                    self.grid.place_agent(wall, pos)
+                    walls[pos] = wall
+        return walls
     
     def create_exits(self):
-        exits = []
+        exits = {}
         exits_positions = [ 
             ((94, 19), (96, 25)),
             ((114, 0), (117, 2)),
@@ -85,10 +84,9 @@ class EvacuationModel(mesa.Model):
             for x in range(top_left[0], bottom_right[0] + 1):
                 for y in range(top_left[1], bottom_right[1] + 1):
                     pos = (x, y)
-                    exit = Exit(f'{x}-exit-{y}', self, State.EXIT)
+                    exit = Exit(f'{x}-exit-{y}', self, pos, State.EXIT)
                     self.grid.place_agent(exit, pos)
-                    self.occupied_cells_by_walls.add(pos)
-                    exits.append(exit)
+                    exits[pos] = exit
         return exits
     
     def step(self):
