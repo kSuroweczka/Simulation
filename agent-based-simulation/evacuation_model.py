@@ -29,7 +29,7 @@ class EvacuationModel(mesa.Model):
                 y = self.random.randrange(self.grid.height)
             
             pos = (x, y)
-            student = StudentAgent(i, self, pos, State.ACTIVE)
+            student = StudentAgent(i, self, pos, State.ACTIVE, self.exits)
     
             self.grid.place_agent(student, pos)
             self.schedule.add(student)
