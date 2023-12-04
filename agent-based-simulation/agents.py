@@ -1,10 +1,9 @@
 import mesa
 from utils import State
+import heapq
 
-from pathfinding.core.grid import Grid
-from pathfinding.finder.a_star import AStarFinder
-
-
+global CELLS_OCCUPIED_BY_STUDENTS
+CELLS_OCCUPIED_BY_STUDENTS =[]
 
 class Exit(mesa.Agent):    
     def __init__(self, unique_id, model, position, state=State.EXIT):
@@ -29,60 +28,127 @@ class Cell:
         self.is_obstacle = is_obstacle
 
 
-LIST_OF_CELLS: list[Cell()]    ### nie wiem czy ona ma byc tutaj
-
 class StudentAgent(mesa.Agent):
-    def __init__(self, unique_id, model, position: (int, int), initial_state=State.ACTIVE, exits_list=list[Exit]):
+    def __init__(self, unique_id, model, position: (int, int), initial_state=State.ACTIVE, exits_list=list[Exit], walls_list=list[(int,int)]):
         super().__init__(unique_id, model)
         self.state = initial_state
         self.current_position = position
         self.parent = None
+        self.walls = walls_list
         self.exits = exits_list
-        # self.target_exit: Exit = None
-        # self.floor_field = self.calculate_static_floor_field(self.target_exit)
+        self.target_exit: (int,int)
+        self.path_to_exit: list[(int,int)] = None
+        CELLS_OCCUPIED_BY_STUDENTS.append(position) 
+
+    def find_target_exit(self): 
+        path =[]
+        cost =[]
+        
+        for exit in self.exits:
+            path_i,cost_i = self.aStarSearch(self.current_position,exit)
+            path.append(path_i)
+            cost.append(cost_i)
+    
+        min_cost = min(cost)
+        min_cost_index = cost.index(min_cost)
+
+        self.path_to_exit = path[min_cost_index] 
+        self.target_exit = self.path_to_exit[-1]
+    
+    def aStarSearch(self, start, stop) -> (list[(int,int)],int): 
+        open_lst = set([start]) 
+        closed_lst = set([])
+
+        g = {}
+        g[start] = 0
+
+        par = {}   ### parent
+        par[start] = start
+ 
+        while len(open_lst) > 0:
+            n = None
+
+            for v in open_lst:
+                if n == None or g[v] + self.H(v,stop) < g[n] + self.H(n, stop):
+                    n = v
+ 
+            if n == None:
+                print('Path does not exist!')
+                return None
+
+            if n == stop:
+                reconst_path = []
+                while par[n] != n:
+                    reconst_path.append(n)
+                    n = par[n]
+                reconst_path.append(start)
+                reconst_path.reverse()
+                return reconst_path, len(reconst_path)
+            
+            x=n[0]
+            y=n[1]
+            neighbors = [ (x - 1, y - 1), (x, y - 1), (x + 1, y - 1), (x - 1, y),(x + 1, y), (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)]
+            for m in neighbors:
+                if m not in open_lst and m not in closed_lst and m not in self.walls:
+                    open_lst.add(m)
+                    par[m] = n
+                    g[m] = g[n] + 10
+
+                else:
+                    if m not in self.walls and g[m] > g[n] + 10:
+                        g[m] = g[n] + 10
+                        par[m] = n
+ 
+                        if m in closed_lst:
+                            closed_lst.remove(m)
+                            open_lst.add(m)
+            open_lst.remove(n)
+            closed_lst.add(n)
+ 
+        print('Path does not exist!')
+        return None
 
     def move(self):
-        possible_steps = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=True)
-        possible_steps = [cell for cell in possible_steps if cell not in self.model.walls]
+        # possible_steps = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=True)
+        # possible_steps = [cell for cell in possible_steps if cell not in self.model.walls]
 
+        # Stary kod
         # here use algotithm to find the shortest path to exit
-        new_position = self.random.choice(possible_steps)
-        self.model.grid.move_agent(self, new_position)
+        # new_position = self.random.choice(possible_steps)
+        # print("NEW: ", new_position)
+        # self.model.grid.move_agent(self, new_position)
 
-        for exit in self.exits:
-            self.aStarSearch(self.current_position, exit)
+        # is_not_occupied = self.model.grid.get_cell_list_contents([new_position]) == 0
+        # print("is: ",self.model.grid.get_cell_list_contents([new_position])  )
+        # if is_not_occupied:
+        #     self.model.grid.move_agent(self, new_position)
+        #     self.position = new_position
 
-        is_not_occupied = self.model.grid.get_cell_list_contents([new_position]) == 0
-        if is_not_occupied:
-            self.model.grid.move_agent(self, new_position)
-            self.position = new_position
+        if len(self.path_to_exit) == 0:
+            print("CEL OSIAGNIETY")
+            # self.model.grid.remove_agent(self)
+            self.state = State.ESCAPED
+            self.currrent_position = self.current_position
+        else:
+            new_position = self.path_to_exit[0] 
 
-    # wieksza czesc znajduje sie w pliku copy-agents.py
-    def aStarSearch(self, current_position, exit: Exit):  ### czyli musi byc wywoływana w kazdym ruchu i dla kazdego exita
-        obstacles = self.Walls.position
-        open_list: list[(int,int)]
-        closed_list: list[(int,int)]
-        g=[]
-        h=[]
-        f=[]
+            # is_not_occupied = self.model.grid.get_cell_list_contents([new_position]) == 0
+            if new_position not in self.walls :
+                self.model.grid.move_agent(self, new_position)
+                CELLS_OCCUPIED_BY_STUDENTS.remove(self.current_position)
+                if self.current_position != self.path_to_exit[-1]: 
+                    self.path_to_exit.remove(self.path_to_exit[0])
+                    CELLS_OCCUPIED_BY_STUDENTS.append(new_position)
+                self.current_position = new_position  
+            else:
+                self.currrent_position = self.current_position
 
-        # TODO: - zeby komorki mialy swoje stany
-        if self.model.grid.is_cell_empty(current_position):  # step 1 ### tutaj czy ten wrunek wystarczy
-            g[0] = 0 ### dla punktu startowego
-            h[0] = self.H(current_position, exit)
-            f[0] = g[0] + h[0]
 
-            open_list.append(current_position)
+   
 
-            # while len(open_list) > 0:
-            #     for neighbor in self.model.grid.get_neighborhood(self.current_position, moore=True, include_center=True):
-        pass
                     
-    def H(self, position,  exit: Exit):
-        return 10 *(abs(position[0] - exit.position[0]) + abs(position[1] - exit.position[1]))
-    
-    def G(self, G_parent_value):    ### tutaj kiedys zmienic na 10 lub 14
-        return 10 + G_parent_value
+    def H(self, position,  exit):
+        return 10 *(abs(position[0] - exit[0]) + abs(position[1] - exit[1]))
     
     def step(self):
         self.move()
