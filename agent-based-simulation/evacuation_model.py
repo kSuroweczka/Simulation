@@ -17,9 +17,9 @@ class EvacuationModel(mesa.Model):
         # use in the future to optimize students movement
         self.walls, self.wall_list = self.create_walls()
         self.exits,self.inside_exits = self.create_exits()
-        # self.benches = self.create_benches()
-        # self.trees = self.create_trees()
-        self.obstacles = list(self.walls.keys()) #+ list(self.benches.keys()) + list(self.trees.keys())
+        self.benches = self.create_benches()
+        self.trees = self.create_trees()
+        self.obstacles = list(self.walls.keys()) + list(self.benches.keys()) + list(self.trees.keys())
         self.create_students()
 
         self.running = True
@@ -33,7 +33,7 @@ class EvacuationModel(mesa.Model):
                 y = self.random.randrange(self.grid.height)
             
             pos = (x, y)
-            student = StudentAgent(i, self, pos, State.ACTIVE, self.wall_list, self.inside_exits) #### potem zmienic exits i walls na cos z model
+            student = StudentAgent(i, self, pos, State.ACTIVE) #### potem zmienic exits i walls na cos z model
             # self.occupied_cells_by_student.append(pos)
     
             self.grid.place_agent(student, pos)
