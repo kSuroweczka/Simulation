@@ -1,4 +1,4 @@
-from agents import StudentAgent, Walls, Exit
+from agents import StudentAgent, Walls, Exit, Bench, Tree
 from utils import *
 import mesa
 from evacuation_model import EvacuationModel
@@ -15,6 +15,21 @@ def person_portrayal(agent):
                      "Color": Colors['WALL'],
                      "w": 1,
                      "h": 1
+                     }
+    elif isinstance(agent, Bench):
+        portrayal = {"Shape": "rect",
+                     "Filled": "true",
+                     "Layer": 0,
+                     "Color": Colors['BENCH'],
+                     "w": 1,
+                     "h": 1
+                     }
+    elif isinstance(agent, Tree):
+        portrayal = {"Shape": "circle",
+                     "Filled": "true",
+                     "Layer": 0,
+                     "Color": Colors['TREE'],
+                     "r": agent.size,
                      }
     elif isinstance(agent, Exit):
         portrayal = {"Shape": "rect",

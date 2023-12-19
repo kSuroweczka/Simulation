@@ -1,5 +1,5 @@
 import mesa
-from agents import StudentAgent, Walls, Exit
+from agents import StudentAgent, Walls, Exit, Bench, Tree
 from utils import *
 
 class EvacuationModel(mesa.Model):
@@ -14,9 +14,12 @@ class EvacuationModel(mesa.Model):
         self.schedule = mesa.time.SimultaneousActivation(self)
         self.grid = mesa.space.MultiGrid(width, height, True)
 
-        # use in the futer to optimize students movement
-        self.walls, self.walls_pos = self.create_walls()
+        # use in the future to optimize students movement
+        self.walls, self.wall_list = self.create_walls()
         self.exits,self.inside_exits = self.create_exits()
+        # self.benches = self.create_benches()
+        # self.trees = self.create_trees()
+        self.obstacles = list(self.walls.keys()) #+ list(self.benches.keys()) + list(self.trees.keys())
         self.create_students()
 
         self.running = True
@@ -30,7 +33,7 @@ class EvacuationModel(mesa.Model):
                 y = self.random.randrange(self.grid.height)
             
             pos = (x, y)
-            student = StudentAgent(i, self, pos, State.ACTIVE, self.inside_exits, self.walls_pos) #### potem zmienic exits i walls na cos z model
+            student = StudentAgent(i, self, pos, State.ACTIVE, self.wall_list, self.inside_exits) #### potem zmienic exits i walls na cos z model
             # self.occupied_cells_by_student.append(pos)
     
             self.grid.place_agent(student, pos)
@@ -41,7 +44,7 @@ class EvacuationModel(mesa.Model):
 
     def create_walls(self):
         walls = {}  # Track occupied cells
-        wall_pos = []
+        wall_list = []
 
         rectangles = [
             ((0, 18), (48, 34)), # straszny dwór?
@@ -71,10 +74,41 @@ class EvacuationModel(mesa.Model):
                 for y in range(top_left[1], bottom_right[1] + 1):
                     pos = (x, y)
                     wall = Walls(f'{x}-{y}', self, pos, State.OBSTACLE)
-                    wall_pos.append(pos)
+                    wall_list.append(pos)
                     self.grid.place_agent(wall, pos)
                     walls[pos] = wall
-        return walls, wall_pos
+        return walls, wall_list
+    
+    def create_benches(self):
+        benches = {}
+        benches_positions = [
+            ((119, 30), (119, 32)),
+            ((119, 40), (119, 42)),
+            ((119, 50), (119, 52))
+        ]
+
+        for top_left, bottom_right in benches_positions:
+            for x in range(top_left[0], bottom_right[0] + 1):
+                for y in range(top_left[1], bottom_right[1] + 1):
+                    pos = (x, y)
+                    bench = Bench(f'{x}-bench-{y}', self, pos, State.OBSTACLE)
+                    self.grid.place_agent(bench, pos)
+                    benches[pos] = bench
+        return benches
+    
+    def create_trees(self):
+        trees = {}
+        trees_positions = [
+            (50, 50),
+            (55, 50),
+        ]
+
+        for x, y in trees_positions:
+            pos = (x, y)
+            tree = Tree(f'{x}-tree-{y}', self, pos, State.OBSTACLE)
+            self.grid.place_agent(tree, pos)
+            trees[pos] = tree
+        return trees
     
     def create_exits(self):
         exits = {}

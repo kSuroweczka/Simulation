@@ -1,6 +1,6 @@
 import mesa
+import random
 from utils import State
-import heapq
 
 global CELLS_OCCUPIED_BY_STUDENTS
 CELLS_OCCUPIED_BY_STUDENTS =[]
@@ -17,19 +17,22 @@ class Walls(mesa.Agent):
         super().__init__(unique_id, model)
         self.state = state
         self.position = position
-    
-class Cell:
-    def __init__(self, position: (int, int), is_obstacle: bool):
-        self.position = position
-        self.g =0
-        self.h =0
-        self.f =0
-        self.parent = None
-        self.is_obstacle = is_obstacle
 
+class Bench(mesa.Agent):
+    def __init__(self, unique_id, model, position, state=State.OBSTACLE):
+        super().__init__(unique_id, model)
+        self.state = state
+        self.position = position
+
+class Tree(mesa.Agent):
+    def __init__(self, unique_id, model, position, state=State.OBSTACLE):
+        super().__init__(unique_id, model)
+        self.state = state
+        self.position = position
+        self.size = random.randint(1,4)
 
 class StudentAgent(mesa.Agent):
-    def __init__(self, unique_id, model, position: (int, int), initial_state=State.ACTIVE, exits_list=list[Exit], walls_list=list[(int,int)]):
+    def __init__(self, unique_id, model, position: (int, int), initial_state=State.ACTIVE, walls_list=[], exits_list=[]):
         super().__init__(unique_id, model)
         self.state = initial_state
         self.current_position = position
@@ -44,7 +47,9 @@ class StudentAgent(mesa.Agent):
         path =[]
         cost =[]
         
-        for exit in self.exits:
+        # for exit in list(self.model.exits.values()):
+        for exit in list(self.exits):
+
             path_i,cost_i = self.aStarSearch(self.current_position,exit)
             path.append(path_i)
             cost.append(cost_i)
@@ -89,13 +94,13 @@ class StudentAgent(mesa.Agent):
             y=n[1]
             neighbors = [ (x - 1, y - 1), (x, y - 1), (x + 1, y - 1), (x - 1, y),(x + 1, y), (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)]
             for m in neighbors:
-                if m not in open_lst and m not in closed_lst and m not in self.walls:
+                if m not in open_lst and m not in closed_lst and m not in self.walls: #self.model.obstacles:
                     open_lst.add(m)
                     par[m] = n
                     g[m] = g[n] + 10
 
                 else:
-                    if m not in self.walls and g[m] > g[n] + 10:
+                    if m not in self.walls and g[m] > g[n] + 10: # self.model.obstacles # na tym się chyba coś zacina
                         g[m] = g[n] + 10
                         par[m] = n
  
@@ -133,7 +138,7 @@ class StudentAgent(mesa.Agent):
             new_position = self.path_to_exit[0] 
 
             # is_not_occupied = self.model.grid.get_cell_list_contents([new_position]) == 0
-            if new_position not in self.walls :
+            if new_position not in self.walls: #self.model.obstacles :
                 self.model.grid.move_agent(self, new_position)
                 CELLS_OCCUPIED_BY_STUDENTS.remove(self.current_position)
                 if self.current_position != self.path_to_exit[-1]: 
@@ -143,8 +148,6 @@ class StudentAgent(mesa.Agent):
             else:
                 self.currrent_position = self.current_position
 
-
-   
 
                     
     def H(self, position,  exit):

@@ -9,7 +9,9 @@ class State(Enum):
 Colors = {
     'STUDENT': "#2ca02c",
     'WALL': "#000000",
-    'EXIT': "#d62728"
+    'EXIT': "#d62728",
+    'BENCH': "#7d420e",
+    'TREE': "#108722", 
 }
 
 WIDTH = 250
