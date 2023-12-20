@@ -26,15 +26,14 @@ class EvacuationModel(mesa.Model):
     
     def create_students(self):
         for i in range(self.num_students):
-            x = self.random.randrange(50, 230)
+            x = self.random.randrange(10, 230)
             y = self.random.randrange(30, 100)
             while (x, y) in self.obstacles or (x, y) in self.exits:
-                x = self.random.randrange(50, 230)
+                x = self.random.randrange(10, 230)
                 y = self.random.randrange(30, 100)
             
             pos = (x, y)
             student = StudentAgent(i, self, pos, State.ACTIVE, obstacles=self.obstacles, exits=self.inside_exits) #### potem zmienic exits i walls na cos z model
-            # self.occupied_cells_by_student.append(pos)
     
             self.grid.place_agent(student, pos)
             self.schedule.add(student)
@@ -114,6 +113,7 @@ class EvacuationModel(mesa.Model):
             ((180, 84), (181, 84)),
             ((190, 84), (191, 84)),
             ((165, 78), (165, 79)),
+            ((165, 72), (165, 73)),
             ((195, 78), (195, 79)),
             ((149, 80), (149, 81)), # góra przy wyjściu
         ]
@@ -135,7 +135,16 @@ class EvacuationModel(mesa.Model):
             (71, 70),
             (110, 50),
             (80, 52),
-            (64, 60)
+            (64, 60),
+            (112, 42),
+            (134, 76),
+            (121, 64),
+            (130, 54),
+            (135, 58),
+            (127, 60),
+            (155, 54),
+            (154, 48)
+
         ]
 
         for x, y in trees_positions:

@@ -29,7 +29,7 @@ class Tree(mesa.Agent):
         super().__init__(unique_id, model)
         self.state = state
         self.position = position
-        self.size = random.randint(2,5)
+        self.size = random.randint(4,5)
 
 class StudentAgent(mesa.Agent):
     def __init__(self, unique_id, model, position: (int, int), initial_state=State.ACTIVE, obstacles=[], exits=[]):
@@ -41,6 +41,7 @@ class StudentAgent(mesa.Agent):
         self.exits = exits
         self.target_exit: (int,int)
         self.path_to_exit: list[(int,int)] = None
+
         CELLS_OCCUPIED_BY_STUDENTS.append(position) 
 
     def find_target_exit(self): 
@@ -112,20 +113,6 @@ class StudentAgent(mesa.Agent):
         return None
 
     def move(self):
-        # possible_steps = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=True)
-        # possible_steps = [cell for cell in possible_steps if cell not in self.model.walls]
-
-        # Stary kod
-        # here use algotithm to find the shortest path to exit
-        # new_position = self.random.choice(possible_steps)
-        # print("NEW: ", new_position)
-        # self.model.grid.move_agent(self, new_position)
-
-        # is_not_occupied = self.model.grid.get_cell_list_contents([new_position]) == 0
-        # print("is: ",self.model.grid.get_cell_list_contents([new_position])  )
-        # if is_not_occupied:
-        #     self.model.grid.move_agent(self, new_position)
-        #     self.position = new_position
 
         if len(self.path_to_exit) == 0:
             print("CEL OSIAGNIETY")
