@@ -15,25 +15,25 @@ class EvacuationModel(mesa.Model):
         self.grid = mesa.space.MultiGrid(width, height, True)
 
         # use in the future to optimize students movement
-        self.walls, self.wall_list = self.create_walls()
+        self.walls, self.wall_pos = self.create_walls()
         self.exits,self.inside_exits = self.create_exits()
-        self.benches = self.create_benches()
-        self.trees = self.create_trees()
-        self.obstacles = list(self.walls.keys()) + list(self.benches.keys()) + list(self.trees.keys())
+        self.benches, self.bench_pos = self.create_benches()
+        self.trees, self.tree_pos = self.create_trees()
+        self.obstacles = self.wall_pos + self.bench_pos + self.tree_pos
         self.create_students()
 
         self.running = True
     
     def create_students(self):
         for i in range(self.num_students):
-            x = self.random.randrange(self.grid.width)
-            y = self.random.randrange(self.grid.height)
-            while (x, y) in self.walls or (x, y) in self.exits:
-                x = self.random.randrange(self.grid.width)
-                y = self.random.randrange(self.grid.height)
+            x = self.random.randrange(50, 230)
+            y = self.random.randrange(30, 100)
+            while (x, y) in self.obstacles or (x, y) in self.exits:
+                x = self.random.randrange(50, 230)
+                y = self.random.randrange(30, 100)
             
             pos = (x, y)
-            student = StudentAgent(i, self, pos, State.ACTIVE) #### potem zmienic exits i walls na cos z model
+            student = StudentAgent(i, self, pos, State.ACTIVE, obstacles=self.obstacles, exits=self.inside_exits) #### potem zmienic exits i walls na cos z model
             # self.occupied_cells_by_student.append(pos)
     
             self.grid.place_agent(student, pos)
@@ -44,7 +44,7 @@ class EvacuationModel(mesa.Model):
 
     def create_walls(self):
         walls = {}  # Track occupied cells
-        wall_list = []
+        wall_pos = []
 
         rectangles = [
             ((0, 18), (48, 34)), # straszny dwór?
@@ -74,17 +74,48 @@ class EvacuationModel(mesa.Model):
                 for y in range(top_left[1], bottom_right[1] + 1):
                     pos = (x, y)
                     wall = Walls(f'{x}-{y}', self, pos, State.OBSTACLE)
-                    wall_list.append(pos)
+                    wall_pos.append(pos)
                     self.grid.place_agent(wall, pos)
                     walls[pos] = wall
-        return walls, wall_list
+        return walls, wall_pos
     
     def create_benches(self):
         benches = {}
         benches_positions = [
-            ((119, 30), (119, 32)),
-            ((119, 40), (119, 42)),
-            ((119, 50), (119, 52))
+            ((119, 30), (119, 31)), 
+            ((119, 45), (119, 46)),
+            ((119, 60), (119, 61)),
+            ((149, 30), (149, 31)),
+            ((149, 45), (149, 46)),
+            ((149, 60), (149, 61)),
+            ((143, 38), (143, 39)),
+            ((143, 53), (143, 54)),
+            ((70, 65), (71, 65)), # przy boiskach dół
+            ((85, 65), (86, 65)), 
+            ((100, 65),(101, 65)),
+            ((93, 70), (94, 70)), # przy boiskach góra
+            ((78, 70), (79, 70)), 
+            ((63, 70), (64, 70)),
+            ((125, 65), (126, 65)), # środek dół
+            ((138, 65), (139, 65)), 
+            ((131, 70), (132, 70)), # środek góra
+            ((119, 75), (119, 76)), 
+            ((119, 85), (119, 86)),
+            ((113, 78), (113, 79)), 
+            ((113, 88), (113, 89)),
+            ((160, 65), (161, 65)), # przy boiskach na flanki góra
+            ((170, 65), (171, 65)),
+            ((180, 65), (181, 65)),
+            ((190, 65), (191, 65)),
+            ((160, 40), (161, 40)), # przy boiskach na flanki dół
+            ((170, 40), (171, 40)),
+            ((180, 40), (181, 40)),
+            ((170, 84), (171, 84)), # góra
+            ((180, 84), (181, 84)),
+            ((190, 84), (191, 84)),
+            ((165, 78), (165, 79)),
+            ((195, 78), (195, 79)),
+            ((149, 80), (149, 81)), # góra przy wyjściu
         ]
 
         for top_left, bottom_right in benches_positions:
@@ -94,13 +125,17 @@ class EvacuationModel(mesa.Model):
                     bench = Bench(f'{x}-bench-{y}', self, pos, State.OBSTACLE)
                     self.grid.place_agent(bench, pos)
                     benches[pos] = bench
-        return benches
+        return benches, list(benches.keys())
     
     def create_trees(self):
         trees = {}
         trees_positions = [
-            (50, 50),
-            (55, 50),
+            (101, 70),
+            (86, 70),
+            (71, 70),
+            (110, 50),
+            (80, 52),
+            (64, 60)
         ]
 
         for x, y in trees_positions:
@@ -108,7 +143,7 @@ class EvacuationModel(mesa.Model):
             tree = Tree(f'{x}-tree-{y}', self, pos, State.OBSTACLE)
             self.grid.place_agent(tree, pos)
             trees[pos] = tree
-        return trees
+        return trees, list(trees.keys())
     
     def create_exits(self):
         exits = {}

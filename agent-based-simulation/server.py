@@ -51,7 +51,7 @@ def person_portrayal(agent):
 
 model_params = {
     "num_students": mesa.visualization.Slider(
-        "Students", 100, 1, 300, description="Number of Students"),   
+        "Students", 300, 20, 500, description="Number of Students"),   
 }
 
 grid = mesa.visualization.CanvasGrid(person_portrayal, WIDTH, HEIGHT, WIDTH * PIXEL_RATIO, HEIGHT * PIXEL_RATIO)
