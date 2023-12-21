@@ -7,7 +7,7 @@ class State(Enum):
     EXIT = 4
 
 Colors = {
-    'STUDENT': "#2ca02c",
+    'STUDENT': "#000080",
     'WALL': "#000000",
     'EXIT': "#d62728",
     'BENCH': "#7d420e",
