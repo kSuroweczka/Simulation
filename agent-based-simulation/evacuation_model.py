@@ -38,7 +38,7 @@ class EvacuationModel(mesa.Model):
             self.grid.place_agent(student, pos)
             self.schedule.add(student)
 
-            # student.find_target_exit()   ### after creating students get the target_exit
+            student.find_target_exit()   ### after creating students get the target_exit
  
 
     def create_walls(self):
@@ -93,23 +93,7 @@ class EvacuationModel(mesa.Model):
     
     def create_trees(self):
         trees = {}
-        trees_positions = [
-            (101, 70),
-            (86, 70),
-            (71, 70),
-            (110, 50),
-            (80, 52),
-            (64, 60),
-            (112, 42),
-            (134, 76),
-            (121, 64),
-            (130, 54),
-            (135, 58),
-            (127, 60),
-            (155, 54),
-            (154, 48)
-
-        ]
+        trees_positions = Trees
 
         for x, y in trees_positions:
             pos = (x, y)
