@@ -1,1 +1,5 @@
-1. number of students - slider
+- dokończenie zatłoczenie
+- oddalenie od ścian
+- prawdziwe ustalenie ławek
+- statystki dla wyjść/punktów
+- dokumentacja

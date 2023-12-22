@@ -38,7 +38,7 @@ class EvacuationModel(mesa.Model):
             self.grid.place_agent(student, pos)
             self.schedule.add(student)
 
-            student.find_target_exit()   ### after creating students get the target_exit
+            # student.find_target_exit()   ### after creating students get the target_exit
  
 
     def create_walls(self):
@@ -80,43 +80,7 @@ class EvacuationModel(mesa.Model):
     
     def create_benches(self):
         benches = {}
-        benches_positions = [
-            ((119, 30), (119, 31)), 
-            ((119, 45), (119, 46)),
-            ((119, 60), (119, 61)),
-            ((149, 30), (149, 31)),
-            ((149, 45), (149, 46)),
-            ((149, 60), (149, 61)),
-            ((143, 38), (143, 39)),
-            ((143, 53), (143, 54)),
-            ((70, 65), (71, 65)), # przy boiskach dół
-            ((85, 65), (86, 65)), 
-            ((100, 65),(101, 65)),
-            ((93, 70), (94, 70)), # przy boiskach góra
-            ((78, 70), (79, 70)), 
-            ((63, 70), (64, 70)),
-            ((125, 65), (126, 65)), # środek dół
-            ((138, 65), (139, 65)), 
-            ((131, 70), (132, 70)), # środek góra
-            ((119, 75), (119, 76)), 
-            ((119, 85), (119, 86)),
-            ((113, 78), (113, 79)), 
-            ((113, 88), (113, 89)),
-            ((160, 65), (161, 65)), # przy boiskach na flanki góra
-            ((170, 65), (171, 65)),
-            ((180, 65), (181, 65)),
-            ((190, 65), (191, 65)),
-            ((160, 40), (161, 40)), # przy boiskach na flanki dół
-            ((170, 40), (171, 40)),
-            ((180, 40), (181, 40)),
-            ((170, 84), (171, 84)), # góra
-            ((180, 84), (181, 84)),
-            ((190, 84), (191, 84)),
-            ((165, 78), (165, 79)),
-            ((165, 72), (165, 73)),
-            ((195, 78), (195, 79)),
-            ((149, 80), (149, 81)), # góra przy wyjściu
-        ]
+        benches_positions = Benches
 
         for top_left, bottom_right in benches_positions:
             for x in range(top_left[0], bottom_right[0] + 1):
