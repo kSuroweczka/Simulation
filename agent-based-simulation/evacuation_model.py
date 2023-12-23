@@ -2,6 +2,7 @@ import mesa
 from agents import StudentAgent, Walls, Exit, Bench, Tree
 from utils import *
 
+ 
 class EvacuationModel(mesa.Model):
 
     def __init__(self, num_students, width=WIDTH, height=HEIGHT, num_steps=20):
@@ -9,18 +10,21 @@ class EvacuationModel(mesa.Model):
         self.height = height
         self.num_students = num_students
         self.num_steps = num_steps
+        self.buffer_update_interval = 5
+        self.current_step = 0
         # self.occupied_cells_by_student: list[(int,int)]
 
         self.schedule = mesa.time.SimultaneousActivation(self)
         self.grid = mesa.space.MultiGrid(width, height, True)
 
-        # use in the future to optimize students movement
+        self.traffic_at_exits = self.calculate_traffic_for_all_exits()
         self.walls, self.wall_pos = self.create_walls()
         self.exits,self.inside_exits = self.create_exits()
         self.benches, self.bench_pos = self.create_benches()
         self.trees, self.tree_pos = self.create_trees()
         self.obstacles = self.wall_pos + self.bench_pos + self.tree_pos
         self.create_students()
+        self.step_count = 0
 
         self.running = True
     
@@ -38,8 +42,9 @@ class EvacuationModel(mesa.Model):
             self.grid.place_agent(student, pos)
             self.schedule.add(student)
 
-            student.find_target_exit()   ### after creating students get the target_exit
- 
+            student.find_target_exit()  
+    
+    
 
     def create_walls(self):
         walls = {}  # Track occupied cells
@@ -104,6 +109,7 @@ class EvacuationModel(mesa.Model):
     
     def create_exits(self):
         exits = {}
+
         inside_exits = {(96,19),(96,20),(96,21),(96,22),(96,23), (96,24),(96,25),
                         (114,2),(115,2),(116,2),(117,2),
                         (144,2),(145,2),(146,2),(147,2),
@@ -116,7 +122,7 @@ class EvacuationModel(mesa.Model):
             ((144, 108),(147, 110)),
             ((114, 117),(117, 119))
         ]
-
+        
         for top_left, bottom_right in exits_positions:
             for x in range(top_left[0], bottom_right[0] + 1):
                 for y in range(top_left[1], bottom_right[1] + 1):
@@ -125,10 +131,37 @@ class EvacuationModel(mesa.Model):
                     self.grid.place_agent(exit, pos)
                     exits[pos] = exit
         return exits, inside_exits
+ 
+    
+    def calculate_traffic_for_all_exits(self):
+        traffic_at_exits = {}
+        exits_pos =  [(96,23), 
+                (96,22),
+                (117,18),      
+                (145,18), 
+                (145,97),
+                (115,106),]
+        
+        for exit in exits_pos:
+            buffer_size = 10
+            area = self.grid.get_neighborhood(exit, moore=True, include_center=True, radius=buffer_size)
+            agents = self.grid.get_cell_list_contents(area)
+            count = sum(1 for agent in agents if isinstance(agent, StudentAgent))
+            traffic_at_exits[exit] = count
+        return traffic_at_exits
+        
+ 
+   
     
     def step(self):
+        self.current_step += 1
+        if self.current_step % 10 == 0:
+            self.traffic_at_exits = self.calculate_traffic_for_all_exits()
+            # print(self.traffic_at_exits, self.current_step)
         self.schedule.step()
 
+            
     def run_model(self):
         for i in range(self.num_steps):
             self.step()
+            
