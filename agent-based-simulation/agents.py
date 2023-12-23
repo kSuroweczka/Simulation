@@ -1,7 +1,7 @@
 import mesa
 import heapq
 import random
-from utils import State
+from utils import *
 import numpy as np  
 
 global CELLS_OCCUPIED_BY_STUDENTS
@@ -52,23 +52,6 @@ class StudentAgent(mesa.Agent):
     def find_target_exit(self):
         self.target_exit = min(self.exits, key=lambda exit: self.calculate_nearest_exit(self.current_position, exit))
         self.path_to_exit, _ = self.aStarSearch(self.current_position, self.target_exit)
-        
-        
-
-    # def find_target_exit(self): 
-    #     path =[]
-    #     cost =[]
-        
-    #     for exit in self.exits:
-    #         path_i,cost_i = self.aStarSearch(self.current_position,exit)
-    #         path.append(path_i)
-    #         cost.append(cost_i)
-    
-    #     min_cost = min(cost)
-    #     min_cost_index = cost.index(min_cost)
-
-    #     self.path_to_exit = path[min_cost_index] 
-    #     self.target_exit = self.path_to_exit[-1]
     
 
     def aStarSearch(self, start, stop):
@@ -115,16 +98,18 @@ class StudentAgent(mesa.Agent):
         return path[::-1]
     
     def move(self):
-        if len(self.path_to_exit) == 0:
+        if len(self.path_to_exit) == 0 and self.state != State.ESCAPED:
             print("Goal reached")
             self.state = State.ESCAPED
-
-        else:
+            self.model.num_students -= 1
+            print(f"Number of students left: {self.model.num_students}")
+            return
+        elif self.state != State.ESCAPED:
             nearest_exit = min(self.exits, key=lambda exit: self.calculate_nearest_exit(self.current_position, exit))
             if nearest_exit != self.target_exit:
                 self.target_exit = nearest_exit
                 self.path_to_exit, _ = self.aStarSearch(self.current_position, self.target_exit)
-           
+            
             new_position = self.path_to_exit[0]
             if new_position not in self.obstacles:
                 self.model.grid.move_agent(self, new_position)
@@ -134,7 +119,8 @@ class StudentAgent(mesa.Agent):
                     CELLS_OCCUPIED_BY_STUDENTS.append(new_position)
                 self.current_position = new_position
 
-                    
+            DENSITY_MATRIX[new_position[0]][new_position[1]] += 1
+
                 
                     
     def H(self, position, exit):

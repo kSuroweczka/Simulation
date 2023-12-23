@@ -1,10 +1,11 @@
 import mesa
 from agents import StudentAgent, Walls, Exit, Bench, Tree
 from utils import *
+import pandas as pd
 
 class EvacuationModel(mesa.Model):
 
-    def __init__(self, num_students, width=WIDTH, height=HEIGHT, num_steps=20):
+    def __init__(self, num_students, width=WIDTH, height=HEIGHT, num_steps=80):
         self.width = width
         self.height = height
         self.num_students = num_students
@@ -34,12 +35,12 @@ class EvacuationModel(mesa.Model):
             
             pos = (x, y)
             student = StudentAgent(i, self, pos, State.ACTIVE, obstacles=self.obstacles, exits=self.inside_exits) #### potem zmienic exits i walls na cos z model
-    
+            DENSITY_MATRIX[x][y] += 1
+
             self.grid.place_agent(student, pos)
             self.schedule.add(student)
 
             student.find_target_exit()   ### after creating students get the target_exit
- 
 
     def create_walls(self):
         walls = {}  # Track occupied cells
@@ -128,7 +129,11 @@ class EvacuationModel(mesa.Model):
     
     def step(self):
         self.schedule.step()
+        if self.num_students == 0:
+            print("Everyone escaped!")
+            print(DENSITY_MATRIX.shape)
+            pd.DataFrame(DENSITY_MATRIX).to_csv('../data/density_matrix.csv')   
+            self.running = False
 
     def run_model(self):
-        for i in range(self.num_steps):
-            self.step()
+        self.step()

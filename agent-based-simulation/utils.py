@@ -1,4 +1,5 @@
 from enum import Enum
+import numpy as np
 
 class State(Enum):
     ACTIVE = 1
@@ -9,6 +10,9 @@ class State(Enum):
 WIDTH = 250
 HEIGHT = 120
 PIXEL_RATIO = 4
+
+global DENSITY_MATRIX
+DENSITY_MATRIX = np.zeros((WIDTH, HEIGHT))
 
 Colors = {
     'STUDENT': "#000080",
