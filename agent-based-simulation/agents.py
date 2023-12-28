@@ -2,10 +2,7 @@ import mesa
 import heapq
 import random
 from utils import *
-import numpy as np  
-
-global CELLS_OCCUPIED_BY_STUDENTS
-CELLS_OCCUPIED_BY_STUDENTS =[]
+import numpy as np 
 
 class Exit(mesa.Agent):    
     def __init__(self, unique_id, model, position, state=State.EXIT):
@@ -52,7 +49,11 @@ class StudentAgent(mesa.Agent):
     def find_target_exit(self):
         self.target_exit = min(self.exits, key=lambda exit: self.calculate_nearest_exit(self.current_position, exit))
         self.path_to_exit, _ = self.aStarSearch(self.current_position, self.target_exit)
-    
+
+        if self.target_exit in EXITS:
+            EXITS[self.target_exit] += 1
+        else:
+            EXITS[self.target_exit] = 1
 
     def aStarSearch(self, start, stop):
         open_lst = [(0, start)]  

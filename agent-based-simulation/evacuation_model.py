@@ -2,6 +2,7 @@ import mesa
 from agents import StudentAgent, Walls, Exit, Bench, Tree
 from utils import *
 import pandas as pd
+import json
 
 class EvacuationModel(mesa.Model):
 
@@ -42,6 +43,9 @@ class EvacuationModel(mesa.Model):
 
             student.find_target_exit()   ### after creating students get the target_exit
 
+        df = pd.DataFrame([EXITS])
+        df.to_csv("../agent-based-simulation/analysis/exits/exits.csv")
+
     def create_walls(self):
         walls = {}  # Track occupied cells
         wall_pos = []
@@ -77,6 +81,17 @@ class EvacuationModel(mesa.Model):
                     wall_pos.append(pos)
                     self.grid.place_agent(wall, pos)
                     walls[pos] = wall
+        rrr=  [(x,43) for x in range(49,97)] + [(97,y) for y in range(26, 43)] ## 1,2 sciany przy lewym dolnym wyjsciu
+        www =  [(114, y) for y in range(3,18)] + [(117, y) for y in range(3,18)] ### 3,4 sciany srodkowym dolnym wujsciu
+        ooo = [(144,y) for y in range(3,19)] + [(147, y) for y in range(3,19)]+[(x,19) for x in range(148,196)]  ## 9,10,14  przy prawym dolnym wyjsciu
+
+        nnn = [(114, y) for y in range(102, 116)] +[(117, y) for y in range(102, 116)]+[(x,101) for x in range(67,114)]  ### 5,6,7 przy lewym gornym wyjsciu
+        ttt = [(x,101) for x in range(118,144)] + [(144, y) for y in range(101,107)] + [(147, y) for y in range(95, 107)] + [(x, 93) for x in range(148, 226)]  ###8, 11, 12, 13 przy prawym gornym wyjsciu
+
+        hhh = [(x,57) for x in range(18,41)] + [(17, y) for y in range(44, 57)] ## 15,16 przy lewym dolnym budynku w srodku
+        jjj= [(x,95) for x in range(1,49)] + [(55,y) for y in range(81, 92)] # 17,18 przy lewym gornym budynku w srodku
+        wall_pos = wall_pos + rrr + www + ooo + nnn + ttt + hhh + jjj
+
         return walls, wall_pos
     
     def create_benches(self):
