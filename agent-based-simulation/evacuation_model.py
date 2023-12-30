@@ -174,10 +174,11 @@ class EvacuationModel(mesa.Model):
             self.traffic_at_exits = self.calculate_traffic_for_all_exits()
             # print(self.traffic_at_exits, self.current_step)
         self.schedule.step()
+        print(self.num_students)
         if self.num_students == 0:
             print("Everyone escaped!")
             print(DENSITY_MATRIX.shape)
-            pd.DataFrame(DENSITY_MATRIX).to_csv('../data/density_matrix.csv')   
+            pd.DataFrame(DENSITY_MATRIX).to_csv('./analysis/paths/density_matrix.csv')   
             self.running = False
 
             

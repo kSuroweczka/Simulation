@@ -5,9 +5,8 @@ import random
 from utils import *
 import numpy as np
 
-global CELLS_OCCUPIED_BY_STUDENTS
+# global CELLS_OCCUPIED_BY_STUDENTS
 CELLS_OCCUPIED_BY_STUDENTS = []
-
 
 class Exit(mesa.Agent):
     def __init__(self, unique_id, model, position, state=State.EXIT):
@@ -140,31 +139,6 @@ class StudentAgent(mesa.Agent):
         return path[::-1]
 
     def move(self):
-        if len(self.path_to_exit) == 0 and self.state != State.ESCAPED:
-            print("Goal reached")
-            self.state = State.ESCAPED
-            self.model.num_students -= 1
-            print(f"Number of students left: {self.model.num_students}")
-            return
-        elif self.state != State.ESCAPED:
-            nearest_exit = min(self.exits, key=lambda exit: self.calculate_nearest_exit(self.current_position, exit))
-            if nearest_exit != self.target_exit:
-                self.target_exit = nearest_exit
-                self.path_to_exit, _ = self.aStarSearch(self.current_position, self.target_exit)
-            
-            new_position = self.path_to_exit[0]
-            if new_position not in self.obstacles:
-                self.model.grid.move_agent(self, new_position)
-                CELLS_OCCUPIED_BY_STUDENTS.remove(self.current_position)
-                if self.current_position != self.path_to_exit[-1]:
-                    self.path_to_exit.pop(0)
-                    CELLS_OCCUPIED_BY_STUDENTS.append(new_position)
-                self.current_position = new_position
-
-            DENSITY_MATRIX[new_position[0]][new_position[1]] += 1
-
-                
-                    
         if self.state == State.ESCAPED or not self.path_to_exit:
             return
         new_position = self.path_to_exit.pop(0)
@@ -175,6 +149,26 @@ class StudentAgent(mesa.Agent):
             self.current_position = new_position
             if self.current_position == self.target_exit:
                 self.state = State.ESCAPED
+                self.model.num_students -= 1
+
+            DENSITY_MATRIX[new_position[0]][new_position[1]] += 1
+
+        # elif self.state != State.ESCAPED:
+        #     nearest_exit = min(self.exits, key=lambda exit: self.calculate_nearest_exit(self.current_position, exit))
+        #     if nearest_exit != self.target_exit:
+        #         self.target_exit = nearest_exit
+        #         self.path_to_exit, _ = self.aStarSearch(self.current_position, self.target_exit)
+            
+        #     new_position = self.path_to_exit[0]
+        #     if new_position not in self.obstacles:
+        #         self.model.grid.move_agent(self, new_position)
+        #         CELLS_OCCUPIED_BY_STUDENTS.remove(self.current_position)
+        #         if self.current_position != self.path_to_exit[-1]:
+        #             self.path_to_exit.pop(0)
+        #             CELLS_OCCUPIED_BY_STUDENTS.append(new_position)
+        #         self.current_position = new_position
+                    
+
 
     def H(self, position, exit):
         return 10 * sum(abs(a - b) for a, b in zip(position, exit))
