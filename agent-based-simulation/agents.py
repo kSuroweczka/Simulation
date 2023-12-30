@@ -153,22 +153,6 @@ class StudentAgent(mesa.Agent):
 
             DENSITY_MATRIX[new_position[0]][new_position[1]] += 1
 
-        # elif self.state != State.ESCAPED:
-        #     nearest_exit = min(self.exits, key=lambda exit: self.calculate_nearest_exit(self.current_position, exit))
-        #     if nearest_exit != self.target_exit:
-        #         self.target_exit = nearest_exit
-        #         self.path_to_exit, _ = self.aStarSearch(self.current_position, self.target_exit)
-            
-        #     new_position = self.path_to_exit[0]
-        #     if new_position not in self.obstacles:
-        #         self.model.grid.move_agent(self, new_position)
-        #         CELLS_OCCUPIED_BY_STUDENTS.remove(self.current_position)
-        #         if self.current_position != self.path_to_exit[-1]:
-        #             self.path_to_exit.pop(0)
-        #             CELLS_OCCUPIED_BY_STUDENTS.append(new_position)
-        #         self.current_position = new_position
-                    
-
 
     def H(self, position, exit):
         return 10 * sum(abs(a - b) for a, b in zip(position, exit))
@@ -179,9 +163,7 @@ class StudentAgent(mesa.Agent):
             new_possible_target_exit = self.evaluate_nearest_exit()
             if new_possible_target_exit != self.target_exit and new_possible_target_exit is not None:
                 self.target_exit = new_possible_target_exit
-                self.path_to_exit, _ = self.aStarSearch(self.current_position, self.target_exit)
-                # print("changed target exit")
-        
+                self.path_to_exit, _ = self.aStarSearch(self.current_position, self.target_exit)        
         self.move()
         if self.state != State.ESCAPED and not self.path_to_exit:
             self.find_target_exit()
