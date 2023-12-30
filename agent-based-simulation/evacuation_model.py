@@ -94,7 +94,7 @@ class EvacuationModel(mesa.Model):
 
         hhh = [(x,57) for x in range(18,41)] + [(17, y) for y in range(44, 57)] ## 15,16 przy lewym dolnym budynku w srodku
         jjj= [(x,95) for x in range(1,49)] + [(55,y) for y in range(81, 92)] # 17,18 przy lewym gornym budynku w srodku
-        wall_pos = wall_pos + rrr + www + ooo + nnn + ttt + hhh + jjj
+        # wall_pos = wall_pos + rrr + www + ooo + nnn + ttt + hhh + jjj
 
         return walls, wall_pos
     

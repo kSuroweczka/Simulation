@@ -71,6 +71,11 @@ class StudentAgent(mesa.Agent):
     def find_target_exit(self):
         self.target_exit = min(self.exits, key=lambda exit: self.calculate_nearest_exit(self.current_position, exit))
         self.path_to_exit, _ = self.aStarSearch(self.current_position, self.target_exit)
+
+        if self.target_exit in EXITS:
+            EXITS[self.target_exit] += 1
+        else:
+            EXITS[self.target_exit] = 1
     
     def evaluate_nearest_exit(self):
         distances = []
