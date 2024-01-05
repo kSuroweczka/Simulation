@@ -17,6 +17,16 @@ CELLS_OCCUPIED_BY_STUDENTS =[]
 global DENSITY_MATRIX
 DENSITY_MATRIX = np.zeros((WIDTH, HEIGHT))
 
+global MAP
+MAP = np.zeros((WIDTH, HEIGHT))
+
+MAP_OBJECTS = {
+    'WALL': 1,
+    'EXIT': 2,
+    'BENCH': 3,
+    'TREE': 4,
+}
+
 EXITS={}
 
 

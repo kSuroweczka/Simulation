@@ -5,9 +5,6 @@ import random
 from utils import *
 import numpy as np
 
-# global CELLS_OCCUPIED_BY_STUDENTS
-CELLS_OCCUPIED_BY_STUDENTS = []
-
 class Exit(mesa.Agent):
     def __init__(self, unique_id, model, position, state=State.EXIT):
         super().__init__(unique_id, model)
