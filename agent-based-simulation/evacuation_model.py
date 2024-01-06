@@ -7,7 +7,7 @@ import json
  
 class EvacuationModel(mesa.Model):
 
-    def __init__(self, num_students, move_probability, width=WIDTH, height=HEIGHT, num_steps=80):
+    def __init__(self, num_students, move_probability, random_move_probability, width=WIDTH, height=HEIGHT, num_steps=80):
         self.width = width
         self.height = height
         self.num_students = num_students
@@ -15,6 +15,7 @@ class EvacuationModel(mesa.Model):
         self.buffer_update_interval = 5
         self.current_step = 0
         self.move_probability = move_probability
+        self.random_move_probability = random_move_probability
 
         self.schedule = mesa.time.SimultaneousActivation(self)
         self.grid = mesa.space.MultiGrid(width, height, True)
@@ -36,7 +37,7 @@ class EvacuationModel(mesa.Model):
                 y = self.random.randrange(30, 100)
             
             pos = (x, y)
-            student = StudentAgent(i, self, pos, State.ACTIVE, obstacles=self.obstacles, exits=self.inside_exits) #### potem zmienic exits i walls na cos z model
+            student = StudentAgent(i, self, pos, self.move_probability, self.random_move_probability, State.ACTIVE, obstacles=self.obstacles, exits=self.inside_exits) #### potem zmienic exits i walls na cos z model
             DENSITY_MATRIX[x][y] += 1
 
             self.grid.place_agent(student, pos)

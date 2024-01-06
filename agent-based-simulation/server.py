@@ -51,9 +51,11 @@ def person_portrayal(agent):
 
 model_params = {
     "num_students": mesa.visualization.Slider(
-        "Students", 1, 100, 500, description="Number of Students"),
+        "Students", 200, 100, 500, description="Number of Students"),
     "move_probability": mesa.visualization.Slider(
         "Move Probability", 0.8, 0.0, 1.0, 0.1, description="Move Probability"),
+    "random_move_probability": mesa.visualization.Slider(
+        "Random Move Probability", 0.15, 0.0, 1.0, 0.1, description="Random Move Probability"),
 }
 
 grid = mesa.visualization.CanvasGrid(person_portrayal, WIDTH, HEIGHT, WIDTH * PIXEL_RATIO, HEIGHT * PIXEL_RATIO)

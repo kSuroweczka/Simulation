@@ -32,7 +32,7 @@ class Tree(mesa.Agent):
         self.size = random.randint(4,5)
         
 class StudentAgent(mesa.Agent):
-    def __init__(self, unique_id, model, position, initial_state=State.ACTIVE, obstacles=[], exits=[]):
+    def __init__(self, unique_id, model, position, move_probability, random_move_probability, initial_state=State.ACTIVE, obstacles=[], exits=[]):
         super().__init__(unique_id, model)
         self.state = initial_state
         self.current_position = tuple(position)  # Ensuring position is a tuple
@@ -41,6 +41,8 @@ class StudentAgent(mesa.Agent):
         self.target_exit = None
         self.path_to_exit = []
         self.step_counter = 0
+        self.move_probability = move_probability
+        self.random_move_probability = random_move_probability
         self.exits_pos =  [ 
                 (96,22),
                 (117,18),      
@@ -190,11 +192,11 @@ class StudentAgent(mesa.Agent):
             if new_possible_target_exit != self.target_exit and new_possible_target_exit is not None:
                 self.target_exit = new_possible_target_exit
                 self.path_to_exit, _ = self.aStarSearch(self.current_position, self.target_exit)  
-        random_move = random.random() < 0.2
+        random_move = random.random() < self.random_move_probability
         if random_move:
             self.add_random_move()
 
-        do_move = random.random() < self.model.student_move_chance
+        do_move = random.random() < self.move_probability
         if do_move: self.move()
 
         if self.state != State.ESCAPED and not self.path_to_exit:
