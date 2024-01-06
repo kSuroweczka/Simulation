@@ -12,12 +12,6 @@ class Exit(mesa.Agent):
         self.position = position
         self.escaped_students = 0
 
-class Obstacle(mesa.Agent):
-    def __init__(self, unique_id, model, position, state):
-        super().__init__(unique_id, model)
-        self.state = state
-        self.position = position
-
 class Walls(mesa.Agent):
     def __init__(self, unique_id, model, position, state=State.OBSTACLE):
         super().__init__(unique_id, model)
@@ -62,9 +56,11 @@ class StudentAgent(mesa.Agent):
         }
         CELLS_OCCUPIED_BY_STUDENTS.append(self.current_position)
 
+
     def calculate_nearest_exit(self, position, exit):
         return abs(position[0] - exit[0]) + abs(position[1] - exit[1])
     
+
     def find_target_exit(self):
         self.target_exit = min(self.exits, key=lambda exit: self.calculate_nearest_exit(self.current_position, exit))
         self.path_to_exit, _ = self.aStarSearch(self.current_position, self.target_exit)
@@ -97,7 +93,6 @@ class StudentAgent(mesa.Agent):
                 continue
 
         return nearest_exit
-
 
 
     def aStarSearch(self, start, stop):
@@ -159,14 +154,49 @@ class StudentAgent(mesa.Agent):
     def H(self, position, exit):
         return 10 * sum(abs(a - b) for a, b in zip(position, exit))
 
+    def add_random_move(self):
+        if len(self.path_to_exit) > 8:
+            next_move = self.path_to_exit[0]
+            d = (next_move[0] - self.current_position[0], next_move[1] - self.current_position[1])
+            moves = [(0,0)]
+            match d:
+                case (0, 1):
+                    moves = [(-1, 1), (1,1)]
+                case (0, -1):
+                    moves = [(-1, -1), (1,-1)]
+                case (1, 0):
+                    moves = [(1, -1), (1,1)]
+                case (-1, 0):
+                    moves = [(-1, -1), (-1,1)]
+                case (1, 1):
+                    moves = [(1, 0), (0,1)]
+                case (-1, -1):
+                    moves = [(-1, 0), (0,-1)]
+                case (1, -1):
+                    moves = [(1, 0), (0,-1)]
+                case (-1, 1):
+                    moves = [(-1, 0), (0,1)]
+            move = random.choice(moves)
+            new_position = (self.current_position[0] + move[0], self.current_position[1] + move[1])
+
+            if new_position not in self.obstacles:
+                self.path_to_exit[0] = new_position
+
+
     def step(self):
         self.step_counter += 1
         if self.step_counter % 10 == 0:
             new_possible_target_exit = self.evaluate_nearest_exit()
             if new_possible_target_exit != self.target_exit and new_possible_target_exit is not None:
                 self.target_exit = new_possible_target_exit
-                self.path_to_exit, _ = self.aStarSearch(self.current_position, self.target_exit)        
-        self.move()
+                self.path_to_exit, _ = self.aStarSearch(self.current_position, self.target_exit)  
+        random_move = random.random() < 0.2
+        if random_move:
+            self.add_random_move()
+
+        do_move = random.random() < self.model.student_move_chance
+        if do_move: self.move()
+
         if self.state != State.ESCAPED and not self.path_to_exit:
             self.find_target_exit()
         

@@ -7,13 +7,14 @@ import json
  
 class EvacuationModel(mesa.Model):
 
-    def __init__(self, num_students, width=WIDTH, height=HEIGHT, num_steps=80):
+    def __init__(self, num_students, move_probability, width=WIDTH, height=HEIGHT, num_steps=80):
         self.width = width
         self.height = height
         self.num_students = num_students
         self.num_steps = num_steps
         self.buffer_update_interval = 5
         self.current_step = 0
+        self.move_probability = move_probability
 
         self.schedule = mesa.time.SimultaneousActivation(self)
         self.grid = mesa.space.MultiGrid(width, height, True)
@@ -115,10 +116,8 @@ class EvacuationModel(mesa.Model):
             self.traffic_at_exits = self.calculate_traffic_for_all_exits()
             # print(self.traffic_at_exits, self.current_step)
         self.schedule.step()
-        print(self.num_students)
         if self.num_students == 0:
             print("Everyone escaped!")
-            print(DENSITY_MATRIX.shape)
             pd.DataFrame(DENSITY_MATRIX).to_csv('./analysis/paths/density_matrix.csv')   
             self.running = False
 
