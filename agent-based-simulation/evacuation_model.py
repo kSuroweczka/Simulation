@@ -2,9 +2,8 @@ import mesa
 from agents import StudentAgent, Walls, Exit, Bench, Tree
 from utils import *
 import pandas as pd
-import json
-
  
+
 class EvacuationModel(mesa.Model):
 
     def __init__(self, num_students, move_probability, random_move_probability, width=WIDTH, height=HEIGHT, num_steps=80):
@@ -21,11 +20,10 @@ class EvacuationModel(mesa.Model):
         self.grid = mesa.space.MultiGrid(width, height, True)
 
         self.traffic_at_exits = self.calculate_traffic_for_all_exits()
-        self.walls, self.wall_pos, self.exits, self.inside_exits, self.benches, self.bench_pos, self.trees, self.tree_pos = self.create_map()
+        self.wall_pos, self.exits, self.inside_exits, self.bench_pos, self.tree_pos = self.create_map()
 
         self.obstacles = self.wall_pos + self.bench_pos + self.tree_pos
         self.create_students()
-        self.step_count = 0
         self.running = True
 
     def create_students(self):
@@ -55,10 +53,9 @@ class EvacuationModel(mesa.Model):
             data = df.values
             data = data.transpose()
         
-        walls = {}
         wall_pos = []
-        trees = {}
-        benches = {}
+        trees_pos = []
+        benches_pos = []
         exits = {}
         inside_exits = {(96,19),(96,20),(96,21),(96,22),(96,23), (96,24),(96,25),
                         (114,2),(115,2),(116,2),(117,2),
@@ -73,7 +70,6 @@ class EvacuationModel(mesa.Model):
                     wall = Walls(f'{x}-{y}', self, pos, State.OBSTACLE)
                     wall_pos.append(pos)
                     self.grid.place_agent(wall, pos)
-                    walls[pos] = wall
                 elif data[y][x] == 2:
                     pos = (x, y)
                     exit = Exit(f'{x}-exit-{y}', self, pos, State.EXIT)
@@ -83,14 +79,14 @@ class EvacuationModel(mesa.Model):
                     pos = (x, y)
                     bench = Bench(f'{x}-bench-{y}', self, pos, State.OBSTACLE)
                     self.grid.place_agent(bench, pos)
-                    benches[pos] = bench
+                    benches_pos.append(pos)
                 elif data[y][x] == 4:
                     pos = (x, y)
                     tree = Tree(f'{x}-tree-{y}', self, pos, State.OBSTACLE)
                     self.grid.place_agent(tree, pos)
-                    trees[pos] = tree
+                    trees_pos.append(pos)
                 
-        return walls, wall_pos, exits, inside_exits, benches, list(benches.keys()),  trees, list(trees.keys()) 
+        return wall_pos, exits, inside_exits, benches_pos, trees_pos 
         
     
     def calculate_traffic_for_all_exits(self):

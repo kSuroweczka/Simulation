@@ -186,6 +186,8 @@ class StudentAgent(mesa.Agent):
 
 
     def step(self):
+
+        # czy nie powinnyśmy przenieść tego do modelu? żeby nie sprawdzać tego warunu dla każdego studenta
         self.step_counter += 1
         if self.step_counter % 10 == 0:
             new_possible_target_exit = self.evaluate_nearest_exit()
