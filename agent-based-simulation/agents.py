@@ -35,27 +35,28 @@ class StudentAgent(mesa.Agent):
     def __init__(self, unique_id, model, position, move_probability, random_move_probability, initial_state=State.ACTIVE, obstacles=[], exits=[]):
         super().__init__(unique_id, model)
         self.state = initial_state
-        self.current_position = tuple(position)  # Ensuring position is a tuple
+        self.current_position = tuple(position) 
         self.obstacles = obstacles
         self.exits = exits
+        self.new_path_needed = False
         self.target_exit = None
         self.path_to_exit = []
         self.step_counter = 0
         self.move_probability = move_probability
         self.random_move_probability = random_move_probability
-        self.exits_pos =  [ 
-                (96,22),
-                (117,18),      
-                (145,18), 
-                (145,97),
-                (115,106),]
-        self.exit_dict = {
-         (96,22):(96,23),
-            (117,18):(116,2),
-             (145,18):(144,2),
-         (145,97):(146,108),
-              (115,106):(116,117)
-        }
+        self.exits_pos =    [          (96,23),
+            (116,2),
+             (144,2),
+         (146,108),
+              (116,117)
+        ]
+        # self.exit_dict = {
+        #  (96,22):(96,23),
+        #     (117,18):(116,2),
+        #      (145,18):(144,2),
+        #  (145,97):(146,108),
+        #       (115,106):(116,117)
+        # }
         CELLS_OCCUPIED_BY_STUDENTS.append(self.current_position)
 
 
@@ -89,12 +90,13 @@ class StudentAgent(mesa.Agent):
             score = 2*distance + traffic
             if score < min_score:
                 min_score = score
-                nearest_exit = self.exit_dict[exit]
+                nearest_exit = exit
         
             else:
                 continue
 
         return nearest_exit
+
 
 
     def aStarSearch(self, start, stop):
@@ -146,9 +148,15 @@ class StudentAgent(mesa.Agent):
             CELLS_OCCUPIED_BY_STUDENTS.remove(self.current_position)
             CELLS_OCCUPIED_BY_STUDENTS.append(new_position)
             self.current_position = new_position
+            self.model.grid_matrix[self.current_position] -= 1  # Decrease count at old position
+            self.current_position = new_position
+            self.model.grid_matrix[self.current_position] += 1
+            
             if self.current_position == self.target_exit:
                 self.state = State.ESCAPED
                 self.model.num_students -= 1
+            
+            
 
             DENSITY_MATRIX[new_position[0]][new_position[1]] += 1
 
@@ -160,24 +168,19 @@ class StudentAgent(mesa.Agent):
         if len(self.path_to_exit) > 8:
             next_move = self.path_to_exit[0]
             d = (next_move[0] - self.current_position[0], next_move[1] - self.current_position[1])
-            moves = [(0,0)]
-            match d:
-                case (0, 1):
-                    moves = [(-1, 1), (1,1)]
-                case (0, -1):
-                    moves = [(-1, -1), (1,-1)]
-                case (1, 0):
-                    moves = [(1, -1), (1,1)]
-                case (-1, 0):
-                    moves = [(-1, -1), (-1,1)]
-                case (1, 1):
-                    moves = [(1, 0), (0,1)]
-                case (-1, -1):
-                    moves = [(-1, 0), (0,-1)]
-                case (1, -1):
-                    moves = [(1, 0), (0,-1)]
-                case (-1, 1):
-                    moves = [(-1, 0), (0,1)]
+
+            direction_to_moves = {
+                (0, 1): [(-1, 1), (1, 1)],
+                (0, -1): [(-1, -1), (1, -1)],
+                (1, 0): [(1, -1), (1, 1)],
+                (-1, 0): [(-1, -1), (-1, 1)],
+                (1, 1): [(1, 0), (0, 1)],
+                (-1, -1): [(-1, 0), (0, -1)],
+                (1, -1): [(1, 0), (0, -1)],
+                (-1, 1): [(-1, 0), (0, 1)]
+            }
+
+            moves = direction_to_moves.get(d, [(0, 0)])  
             move = random.choice(moves)
             new_position = (self.current_position[0] + move[0], self.current_position[1] + move[1])
 
@@ -185,21 +188,22 @@ class StudentAgent(mesa.Agent):
                 self.path_to_exit[0] = new_position
 
 
+
     def step(self):
 
-        # czy nie powinnyśmy przenieść tego do modelu? żeby nie sprawdzać tego warunu dla każdego studenta
-        self.step_counter += 1
-        if self.step_counter % 10 == 0:
-            new_possible_target_exit = self.evaluate_nearest_exit()
-            if new_possible_target_exit != self.target_exit and new_possible_target_exit is not None:
-                self.target_exit = new_possible_target_exit
-                self.path_to_exit, _ = self.aStarSearch(self.current_position, self.target_exit)  
+        if self.new_path_needed:
+            self.find_target_exit()
+            self.new_path_needed = False
+       
         random_move = random.random() < self.random_move_probability
+        
+    
         if random_move:
             self.add_random_move()
 
         do_move = random.random() < self.move_probability
-        if do_move: self.move()
+        if do_move: 
+            self.move()
 
         if self.state != State.ESCAPED and not self.path_to_exit:
             self.find_target_exit()
