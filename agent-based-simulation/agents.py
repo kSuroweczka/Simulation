@@ -148,7 +148,7 @@ class StudentAgent(mesa.Agent):
             CELLS_OCCUPIED_BY_STUDENTS.remove(self.current_position)
             CELLS_OCCUPIED_BY_STUDENTS.append(new_position)
             self.current_position = new_position
-            self.model.grid_matrix[self.current_position] -= 1  # Decrease count at old position
+            self.model.grid_matrix[self.current_position] -= 1 
             self.current_position = new_position
             self.model.grid_matrix[self.current_position] += 1
             
