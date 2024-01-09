@@ -2,6 +2,7 @@ import mesa
 from agents import StudentAgent, Walls, Exit, Bench, Tree
 from utils import *
 import pandas as pd
+import os
  
 
 class EvacuationModel(mesa.Model):
@@ -9,22 +10,24 @@ class EvacuationModel(mesa.Model):
     def __init__(self, num_students, move_probability, random_move_probability, width=WIDTH, height=HEIGHT, num_steps=80):
         self.width = width
         self.height = height
+        self.grid_matrix = np.zeros((width, height))  
         self.num_students = num_students
         self.num_steps = num_steps
+        self.all_exits = [(96,23), (116,2), (144,2), (146,108), (116,117)]           
+        self.exits_to_evaluate = list(self.all_exits)  
         self.buffer_update_interval = 5
         self.current_step = 0
+        self.agents_to_evaluate = []
         self.move_probability = move_probability
         self.random_move_probability = random_move_probability
-
         self.schedule = mesa.time.SimultaneousActivation(self)
         self.grid = mesa.space.MultiGrid(width, height, True)
-
-        self.traffic_at_exits = self.calculate_traffic_for_all_exits()
+        self.traffic_at_exits = {exit_pos: 0 for exit_pos in self.all_exits}  
         self.wall_pos, self.exits, self.inside_exits, self.bench_pos, self.tree_pos = self.create_map()
-
         self.obstacles = self.wall_pos + self.bench_pos + self.tree_pos
         self.create_students()
         self.running = True
+        self.active_students = self.num_students
 
     def create_students(self):
         for i in range(self.num_students):
@@ -41,7 +44,7 @@ class EvacuationModel(mesa.Model):
             self.grid.place_agent(student, pos)
             self.schedule.add(student)
 
-            student.find_target_exit()   ### after creating students get the target_exit
+            student.find_target_exit()   
 
         df = pd.DataFrame([EXITS])
         df.to_csv("../agent-based-simulation/analysis/exits/exits.csv")
@@ -91,26 +94,39 @@ class EvacuationModel(mesa.Model):
     
     def calculate_traffic_for_all_exits(self):
         traffic_at_exits = {}
-        exits_pos =  [(96,23), 
-                (96,22),
-                (117,18),      
-                (145,18), 
-                (145,97),
-                (115,106),]
+      
+        buffer_size = 20
+        for exit_pos in self.exits_to_evaluate:
+            x_min = max(0, exit_pos[0] - buffer_size)
+            x_max = min(self.width, exit_pos[0] + buffer_size + 1)
+            y_min = max(0, exit_pos[1] - buffer_size)
+            y_max = min(self.height, exit_pos[1] + buffer_size + 1)
+
         
-        for exit in exits_pos:
-            buffer_size = 10
-            area = self.grid.get_neighborhood(exit, moore=True, include_center=True, radius=buffer_size)
-            agents = self.grid.get_cell_list_contents(area)
-            count = sum(1 for agent in agents if isinstance(agent, StudentAgent))
-            traffic_at_exits[exit] = count
+            area_count = np.sum(self.grid_matrix[x_min:x_max, y_min:y_max])
+            self.traffic_at_exits[exit_pos] = area_count
+ 
+            
         return traffic_at_exits
-    
-    
+    def evaluate_student_path(self):
+        num_agents_to_evaluate = max(1, int(self.active_students * 0.1))  
+        for _ in range(num_agents_to_evaluate):
+            if self.agents_to_evaluate:
+                agent = self.agents_to_evaluate.pop(0)  
+                new_target_exit = agent.evaluate_nearest_exit()
+                if new_target_exit != agent.target_exit:
+                    agent.new_path_needed = True
+                    
     def step(self):
+        
         self.current_step += 1
         if self.current_step % 10 == 0:
-            self.traffic_at_exits = self.calculate_traffic_for_all_exits()
+            self.agents_to_evaluate = [agent for agent in self.schedule.agents if isinstance(agent, StudentAgent)]
+            self.active_students = len(self.agents_to_evaluate)
+            self.evaluate_student_path()
+        else:
+            self.evaluate_student_path()
+            
             # print(self.traffic_at_exits, self.current_step)
         self.schedule.step()
         if self.num_students == 0:
