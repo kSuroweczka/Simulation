@@ -25,7 +25,7 @@ class EvacuationModel(mesa.Model):
         self.traffic_at_exits = {exit_pos: 0 for exit_pos in self.all_exits}  
         self.wall_pos, self.exits, self.inside_exits, self.bench_pos, self.tree_pos = self.create_map()
         self.obstacles = self.wall_pos + self.bench_pos + self.tree_pos
-        self.create_students()
+        self.create_students_version_3()
         self.running = True
         self.active_students = self.num_students
 
@@ -48,7 +48,46 @@ class EvacuationModel(mesa.Model):
 
         df = pd.DataFrame([EXITS])
         df.to_csv("../agent-based-simulation/analysis/exits/exits.csv")
+    
+    def create_students_version_2(self):
+        for i in range(self.num_students):
+            x = self.random.randrange(150, 220)
+            y = self.random.randrange(40, 90)
+            while (x, y) in self.obstacles or (x, y) in self.exits:
+                x = self.random.randrange(150, 220)
+                y = self.random.randrange(40, 90)
+            
+            pos = (x, y)
+            student = StudentAgent(i, self, pos, self.move_probability, self.random_move_probability, State.ACTIVE, obstacles=self.obstacles, exits=self.inside_exits) #### potem zmienic exits i walls na cos z model
+            DENSITY_MATRIX[x][y] += 1
 
+            self.grid.place_agent(student, pos)
+            self.schedule.add(student)
+
+            student.find_target_exit()   
+
+        df = pd.DataFrame([EXITS])
+        df.to_csv("../agent-based-simulation/analysis/exits/exits.csv")
+
+    def create_students_version_3(self):
+        for i in range(self.num_students):
+            x = self.random.randrange(110, 150)
+            y = self.random.randrange(50, 80)
+            while (x, y) in self.obstacles or (x, y) in self.exits:
+                x = self.random.randrange(110, 150)
+                y = self.random.randrange(50, 80)
+            
+            pos = (x, y)
+            student = StudentAgent(i, self, pos, self.move_probability, self.random_move_probability, State.ACTIVE, obstacles=self.obstacles, exits=self.inside_exits) #### potem zmienic exits i walls na cos z model
+            DENSITY_MATRIX[x][y] += 1
+
+            self.grid.place_agent(student, pos)
+            self.schedule.add(student)
+
+            student.find_target_exit()   
+
+        df = pd.DataFrame([EXITS])
+        df.to_csv("../agent-based-simulation/analysis/exits/exits.csv")
 
     def create_map(self):
         with open('./map_template.csv', 'r'):
